@@ -1,4 +1,4 @@
-# 🚀 Sistema de Cadastro & Repositório de Snippets (v1.5)
+# 🚀 Sistema de Cadastro & Repositório de Snippets (v2.0)
 
 Este é um projeto **Full Stack** moderno que permite o cadastro de usuários e a postagem de trechos de código (snippets) filtrados por tecnologia.
 
