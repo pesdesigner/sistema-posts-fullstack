@@ -1,0 +1,29 @@
+# Java / Maven (API)
+**/target/
+**/*.class
+**/*.jar
+.mvn/
+mvnw
+mvnw.cmd
+
+# Node / React (Frontend)
+**/node_modules/
+**/dist/
+.env
+*.local
+
+# Docker & Banco de Dados
+mysql_data/
+**/.docker/
+
+# IDEs e Sistema
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+**/application-dev.properties
+**/application-prod.properties
+**/application.properties
+.env

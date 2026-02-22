@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@layer components {
+  /* Classe para o fundo com gradiente */
+  .page-container {
+    @apply min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4;
+  }
+
+  /* Classe para o Card Glassmorphism */
+  .glass-card {
+    @apply bg-white/20 backdrop-blur-lg border border-white/30 rounded-2xl p-8 shadow-2xl;
+  }
+
+  /* Classe para os Inputs */
+  .glass-input {
+    @apply w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white 
+           placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 transition;
+  }
+
+  /* Classe para o Botão Principal */
+  .btn-primary {
+    @apply flex-1 px-4 py-3 rounded-lg bg-white text-blue-600 font-bold hover:bg-blue-50 transition shadow-lg;
+  }
+
+  /* Classe para o Botão Cancelar */
+  .btn-secondary {
+    @apply flex-1 px-4 py-3 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 transition border border-white/20;
+  }
+}
