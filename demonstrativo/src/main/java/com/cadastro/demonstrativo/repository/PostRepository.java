@@ -10,5 +10,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // Busca posts filtrados por tecnologia (ex: encontrar todos de "Java")
     List<Post> findByTecnologiaIgnoreCase(String tecnologia);
+    List<Post> findByAutorId(Long autorId);
+
 }
 

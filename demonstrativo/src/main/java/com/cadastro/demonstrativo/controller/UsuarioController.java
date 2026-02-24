@@ -34,6 +34,7 @@ public class UsuarioController {
         novoUsuario.setNome(dados.nome());
         novoUsuario.setEmail(dados.email());
         novoUsuario.setSenha(dados.senha()); // Aqui você poderia aplicar o BCrypt depois
+        novoUsuario.setPerfil(dados.perfil());
 
         Usuario usuarioSalvo = repository.save(novoUsuario);
 
@@ -63,6 +64,7 @@ public class UsuarioController {
             // Atualiza os campos da Entity
             usuario.setNome(dados.nome());
             usuario.setEmail(dados.email());
+            usuario.setPerfil(dados.perfil());
             // Só atualiza a senha se ela não vier nula ou vazia
             if (dados.senha() != null && !dados.senha().isBlank()) {
                 usuario.setSenha(dados.senha());

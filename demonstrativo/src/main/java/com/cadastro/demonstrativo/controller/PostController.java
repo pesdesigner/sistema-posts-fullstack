@@ -65,5 +65,54 @@ public class PostController {
                 .map(PostResponseDTO::new)
                 .toList();
     }
+
+    @GetMapping("/autor/{id}")
+    public List<PostResponseDTO> listarPorAutor(@PathVariable Long id) {
+        return postRepository.findByAutorId(id)
+                .stream()
+                .map(PostResponseDTO::new)
+                .toList();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PostResponseDTO> buscarPorId(@PathVariable Long id) {
+        return postRepository.findById(id)
+                .map(post -> ResponseEntity.ok(new PostResponseDTO(post)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
+    @PutMapping("/{postId}/{usuarioId}")
+    public ResponseEntity<?> atualizarPost(@PathVariable Long postId, @PathVariable Long usuarioId, @RequestBody PostRequestDTO dados) {
+        return postRepository.findById(postId).map(post -> {
+            // Validação de Propriedade
+            if (!post.getAutor().getId().equals(usuarioId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para editar este post.");
+            }
+
+            post.setTitulo(dados.titulo());
+            post.setDescricao(dados.descricao());
+            post.setComando(dados.comando());
+            post.setTecnologia(dados.tecnologia());
+
+            postRepository.save(post);
+            return ResponseEntity.ok(new PostResponseDTO(post));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+
+    @DeleteMapping("/{postId}/{usuarioId}")
+    public ResponseEntity<?> excluirPost(@PathVariable Long postId, @PathVariable Long usuarioId) {
+        return postRepository.findById(postId).map(post -> {
+            // Validação crucial: o usuário que apaga é o autor?
+            if (!post.getAutor().getId().equals(usuarioId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Erro: Você não tem permissão para excluir este post.");
+            }
+            postRepository.delete(post);
+            return ResponseEntity.noContent().build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
 }
 

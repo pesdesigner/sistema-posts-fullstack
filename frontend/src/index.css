@@ -3,7 +3,8 @@
 @layer components {
   /* Classe para o fundo com gradiente */
   .page-container {
-    @apply min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4;
+    /* Garante que o conteúdo da 404 não estique tudo */
+    @apply min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-900 p-4;
   }
 
   /* Classe para o Card Glassmorphism */
@@ -19,7 +20,9 @@
 
   /* Classe para o Botão Principal */
   .btn-primary {
-    @apply flex-1 px-4 py-3 rounded-lg bg-white text-blue-600 font-bold hover:bg-blue-50 transition shadow-lg;
+    /* Adicionamos w-fit para ele respeitar o tamanho do texto */
+    @apply px-6 py-2 bg-white text-blue-600 font-bold rounded-lg shadow-lg 
+           hover:bg-blue-50 transition duration-300 w-fit self-center h-fit;
   }
 
   /* Classe para o Botão Cancelar */

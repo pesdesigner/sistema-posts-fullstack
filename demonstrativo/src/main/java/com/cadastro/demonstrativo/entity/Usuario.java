@@ -1,5 +1,6 @@
 package com.cadastro.demonstrativo.entity;
 
+import com.cadastro.demonstrativo.entity.enums.Perfil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,12 @@ public class Usuario {
 
     @Column(nullable = false)
     private String senha;
+
+    // Dentro de Usuario.java
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Perfil perfil = Perfil.COLABORADOR; // Valor padrão para novos cadastros
+
 
     // Relacionamento Inverso: Um usuário tem muitos posts
     // mappedBy indica que o campo 'autor' na classe Post é o dono do relacionamento

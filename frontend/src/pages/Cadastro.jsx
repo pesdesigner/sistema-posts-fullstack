@@ -4,8 +4,8 @@ import api from '../services/api';
 
 export function Cadastro() {
   // Estado inicial do formulário
-  const [form, setForm] = useState({ nome: '', email: '', senha: '' });
-  
+  const [form, setForm] = useState({ nome: '', email: '', senha: '', perfil: 'COLABORADOR' });
+
   // Hooks para navegação e captura de ID da URL
   const { id } = useParams();
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export function Cadastro() {
       api.get(`/usuarios/${id}`)
         .then(res => {
           // Preenche o form, mas mantém a senha vazia por segurança
-          setForm({ nome: res.data.nome, email: res.data.email, senha: '' });
+          setForm({ nome: res.data.nome, email: res.data.email, perfil: res.data.perfil, senha: '' });
         })
         .catch(err => {
           console.error("Erro ao buscar usuário:", err);
@@ -39,20 +39,20 @@ export function Cadastro() {
         await api.post('/usuarios', form);
         alert("Usuário cadastrado com sucesso!");
       }
-      navigate('/'); // Volta para a listagem
+      navigate('/usuarios'); // Volta para a listagem
     } catch (err) {
-    const erroData = err.response?.data;
-    
-    // Se o Spring enviou uma lista de erros de validação (BindingResult)
-    if (erroData?.errors && Array.isArray(erroData.errors)) {
+      const erroData = err.response?.data;
+
+      // Se o Spring enviou uma lista de erros de validação (BindingResult)
+      if (erroData?.errors && Array.isArray(erroData.errors)) {
         const mensagens = erroData.errors.map(e => `${e.field}: ${e.defaultMessage}`).join('\n');
         alert("Erro de Validação:\n" + mensagens);
-    } else {
+      } else {
         // Caso seja um erro simples (como e-mail duplicado ou erro 500)
         const msg = typeof erroData === 'string' ? erroData : (erroData?.message || "Erro desconhecido");
         alert("Erro: " + msg);
-    }
-    console.error("Detalhes do erro no F12:", erroData);
+      }
+      console.error("Detalhes do erro no F12:", erroData);
     }
   };
 
@@ -68,47 +68,62 @@ export function Cadastro() {
         <h1 className="text-3xl font-bold text-white mb-6 text-center">
           {id ? 'Editar Usuário' : 'Novo Cadastro'}
         </h1>
-        
+
         <form onSubmit={handleSalvar} className="flex flex-col gap-4">
-          <input 
+          <input
             name="nome"
-            className="glass-input" 
-            value={form.nome} 
+            className="glass-input"
+            value={form.nome}
             onChange={handleChange}
-            placeholder="Nome Completo" 
-            required 
+            placeholder="Nome Completo"
+            required
           />
-          
-          <input 
+
+          <input
             name="email"
             type="email"
-            className="glass-input" 
-            value={form.email} 
+            className="glass-input"
+            value={form.email}
             onChange={handleChange}
-            placeholder="E-mail" 
-            required 
+            placeholder="E-mail"
+            required
           />
-          
-          <input 
+
+          <input
             name="senha"
-            type="password" 
-            className="glass-input" 
-            value={form.senha} 
+            type="password"
+            className="glass-input"
+            value={form.senha}
             onChange={handleChange}
-            placeholder={id ? "Deixe em branco para manter a atual" : "Senha"} 
+            placeholder={id ? "Deixe em branco para manter a atual" : "Senha"}
             required={!id} // Obrigatório apenas se NÃO tiver ID (cadastro novo)
           />
-          
+
+          <div>
+            <label className="text-white/60 text-sm ml-1">Perfil de Acesso</label>
+            <select
+              name="perfil"
+              className="glass-input mt-1 cursor-pointer"
+              value={form.perfil}
+              onChange={handleChange}
+              required
+            >
+              <option value="COLABORADOR" className="text-black">Colaborador</option>
+              <option value="ADMIN" className="text-black">Administrador</option>
+            </select>
+          </div>
+
+
           <div className="flex gap-3 mt-4">
-            <button 
-              type="button" 
-              onClick={() => navigate('/')} 
+            <button
+              type="button"
+              onClick={() => navigate('/usuarios')}
               className="btn-secondary"
             >
               Cancelar
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn-primary"
             >
               {id ? 'Salvar Alterações' : 'Cadastrar'}
