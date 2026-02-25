@@ -1,13 +1,15 @@
 package com.cadastro.demonstrativo.entity;
 
 import com.cadastro.demonstrativo.entity.enums.Perfil;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
@@ -15,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,15 +32,39 @@ public class Usuario {
     @Column(nullable = false)
     private String senha;
 
-    // Dentro de Usuario.java
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Perfil perfil = Perfil.COLABORADOR; // Valor padrão para novos cadastros
+    private Perfil perfil;
 
-
-    // Relacionamento Inverso: Um usuário tem muitos posts
-    // mappedBy indica que o campo 'autor' na classe Post é o dono do relacionamento
+    // RELACIONAMENTO: Um usuário tem muitos posts
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)
-    @JsonIgnore // Evita recursão infinita ao serializar para JSON
+    @JsonIgnore // Importante para não dar loop no JSON
+    @ToString.Exclude // Importante para não dar loop no log
     private List<Post> posts;
+
+    // --- MÉTODOS OBRIGATÓRIOS DO SPRING SECURITY (UserDetails) ---
+
+    @Override
+    @JsonIgnore
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Converte o ENUM para ROLE_ADMIN ou ROLE_COLABORADOR
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.perfil.name()));
+    }
+
+    @Override
+    @JsonIgnore
+    public String getPassword() {
+        return this.senha;
+    }
+
+    @Override
+    @JsonIgnore
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override @JsonIgnore public boolean isAccountNonExpired() { return true; }
+    @Override @JsonIgnore public boolean isAccountNonLocked() { return true; }
+    @Override @JsonIgnore public boolean isCredentialsNonExpired() { return true; }
+    @Override @JsonIgnore public boolean isEnabled() { return true; }
 }

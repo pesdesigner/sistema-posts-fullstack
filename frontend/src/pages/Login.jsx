@@ -7,21 +7,22 @@ export function Login() {
   const [senha, setSenha] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.post('/auth/login', { email, senha });
-      
-      // Salva os dados do usuário no localStorage para persistir o login
-      localStorage.setItem('usuarioLogado', JSON.stringify(response.data));
-      
-      alert(`Bem-vindo, ${response.data.nome}!`);
-      navigate('/'); // Redireciona para o Feed
-      window.location.reload(); // Recarrega para atualizar a Navbar
-    } catch (err) {
-      alert("E-mail ou senha incorretos.");
-    }
-  };
+const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await api.post('/auth/login', { email, senha });
+    
+    // Agora o response.data contém { token, id, nome, perfil }
+    localStorage.setItem('usuarioLogado', JSON.stringify(response.data));
+    localStorage.setItem('token', response.data.token); // Salva o token separado para facilitar
+    
+    navigate('/');
+    window.location.reload();
+  } catch (err) {
+    alert(err.response?.data?.mensagem || "Falha no login");
+  }
+};
+
 
   return (
     <div className="page-container">

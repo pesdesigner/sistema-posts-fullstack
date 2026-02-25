@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,8 @@ import java.util.List;
 public class UsuarioController {
     @Autowired
     private UsuarioRepository repository;
+    @Autowired
+    private PasswordEncoder encoder;
 
     @GetMapping
     public List<UsuarioResponseDTO> listarTodos() {
@@ -29,17 +32,17 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuarioResponseDTO> salvar(@RequestBody @Valid UsuarioRequestDTO dados) {
-        // Convertendo DTO para Entity
         Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(dados.nome());
         novoUsuario.setEmail(dados.email());
-        novoUsuario.setSenha(dados.senha()); // Aqui você poderia aplicar o BCrypt depois
+
+        // CRIPTOGRAFIA AQUI: Transforma "123456" em algo ilegível
+        String senhaCriptografada = encoder.encode(dados.senha());
+        novoUsuario.setSenha(senhaCriptografada);
+
         novoUsuario.setPerfil(dados.perfil());
-
-        Usuario usuarioSalvo = repository.save(novoUsuario);
-
-        // Retornando o DTO de Resposta (Sem a senha!)
-        return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioResponseDTO(usuarioSalvo));
+        repository.save(novoUsuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioResponseDTO(novoUsuario));
     }
 
     @GetMapping("/{id}")

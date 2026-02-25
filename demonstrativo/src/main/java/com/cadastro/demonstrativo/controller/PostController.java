@@ -24,17 +24,20 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<?> criarPost(@RequestBody @Valid PostRequestDTO dados) {
-        // Buscamos o autor primeiro
-        var autorOptional = usuarioRepository.findById(dados.usuarioId());
+        // Busca o autor
+        var autor = usuarioRepository.findById(dados.usuarioId())
+                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
 
-        if (autorOptional.isEmpty()) {
-            // Se não encontrar, retorna String (Permitido pelo <?>)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Erro: Autor com ID " + dados.usuarioId() + " não encontrado.");
+        // REGRA DE DUPLICIDADE:
+        // Verifica se já existe um post com mesmo título E tecnologia PARA ESTE AUTOR
+        boolean jaExiste = postRepository.existsByTituloAndTecnologiaAndAutor(
+                dados.titulo(), dados.tecnologia(), autor
+        );
+
+        if (jaExiste) {
+            // O GlobalExceptionHandler vai capturar isso e mandar pro React
+            throw new RuntimeException("Você já cadastrou um snippet com este título para " + dados.tecnologia());
         }
-
-        // Se encontrar, seguimos com a lógica
-        var autor = autorOptional.get();
 
         Post novoPost = new Post();
         novoPost.setTitulo(dados.titulo());
@@ -43,11 +46,10 @@ public class PostController {
         novoPost.setTecnologia(dados.tecnologia());
         novoPost.setAutor(autor);
 
-        Post postSalvo = postRepository.save(novoPost);
-
-        // Retorna o DTO (Permitido pelo <?>)
-        return ResponseEntity.status(HttpStatus.CREATED).body(new PostResponseDTO(postSalvo));
+        postRepository.save(novoPost);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new PostResponseDTO(novoPost));
     }
+
 
 
     @GetMapping

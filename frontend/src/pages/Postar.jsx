@@ -7,15 +7,24 @@ export function Postar() {
   const navigate = useNavigate();
   const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
 
+  const tecnologias = ['Java', 'Python', 'C#', 'Docker', 'React', 'Node','MySQL', 'Outros'];
+
   const [form, setForm] = useState({
     titulo: '',
     descricao: '',
     comando: '',
     tecnologia: 'Java',
+    tecnologiaPersonalizada: '', 
     usuarioId: usuarioLogado?.id
   });
 
-  const tecnologias = ['Java', 'Python', 'C#', 'Docker', 'React', 'Node'];
+  const [mostrarInputOutros, setMostrarInputOutros] = useState(false);
+
+  const handleSelectChange = (e) => {
+    const valor = e.target.value;
+    setForm({ ...form, tecnologia: valor });
+    setMostrarInputOutros(valor === 'Outros');
+  };
 
   // BUSCA DADOS DO POST SE FOR EDIÇÃO
   useEffect(() => {
@@ -44,24 +53,31 @@ export function Postar() {
     setForm({ ...form, [name]: value });
   };
 
-  const handleSalvar = async (e) => {
-    e.preventDefault();
-    try {
-      if (id) {
-        // Rota de UPDATE: /posts/{postId}/{usuarioId}
-        await api.put(`/posts/${id}/${usuarioLogado.id}`, form);
-        alert("Snippet atualizado com sucesso! 📝");
-      } else {
-        // Rota de CREATE: /posts
-        await api.post('/posts', form);
-        alert("Snippet publicado com sucesso! 🚀");
-      }
-      navigate('/meus-posts');
-    } catch (err) {
-      const msg = err.response?.data || "Erro ao salvar o snippet.";
-      alert(msg);
-    }
+const handleSalvar = async (e) => {
+  e.preventDefault();
+
+  // Se for "Outros", usamos o valor digitado no input manual
+  const dadosParaEnviar = {
+    ...form,
+    tecnologia: form.tecnologia === 'Outros' ? form.tecnologiaPersonalizada : form.tecnologia
   };
+
+  try {
+    if (id) {
+      await api.put(`/posts/${id}/${usuarioLogado.id}`, dadosParaEnviar);
+      alert("Snippet atualizado! 📝");
+    } else {
+      await api.post('/posts', dadosParaEnviar);
+      alert("Snippet publicado! 🚀");
+    }
+    navigate('/meus-posts');
+  } catch (err) {
+    // Aqui o seu GlobalExceptionHandler do Java vai brilhar!
+    const msg = err.response?.data?.mensagem || "Erro ao salvar";
+    alert(msg);
+  }
+};
+
 
   return (
     <div className="page-container">
@@ -89,12 +105,24 @@ export function Postar() {
               name="tecnologia"
               className="glass-input mt-1 cursor-pointer"
               value={form.tecnologia}
-              onChange={handleChange}
+              onChange={handleSelectChange}
             >
               {tecnologias.map(t => (
                 <option key={t} value={t} className="text-black">{t}</option>
               ))}
             </select>
+
+              {/* RENDERIZAÇÃO CONDICIONAL: Só aparece se for "Outros" */}
+            {mostrarInputOutros && (
+              <input 
+                type="text"
+                className="glass-input mt-3 border-blue-400/50 animate-pulse"
+                placeholder="Qual tecnologia?"
+                value={form.tecnologiaPersonalizada}
+                onChange={e => setForm({...form, tecnologiaPersonalizada: e.target.value})}
+                required
+              />
+            )}
           </div>
 
           <div>
