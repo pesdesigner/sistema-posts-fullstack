@@ -29,4 +29,32 @@
   .btn-secondary {
     @apply flex-1 px-4 py-3 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 transition border border-white/20;
   }
+
+  /* Custom Scrollbar para os Blocos de Comando/Código */
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 6px; /* Altura da barra horizontal */
+    width: 6px;  /* Largura da barra vertical */
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-black/20 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-blue-500/30 rounded-full border border-blue-400/20 hover:bg-blue-500/60 transition-colors;
+  }
+
+  /* Esconde a barra por padrão e mostra no hover para um visual mais limpo */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.3) transparent;
+  }
+
+  .code-block {
+    white-space: pre-wrap;       /* Preserva quebras de linha e espaços */
+    word-wrap: break-word;       /* Quebra palavras longas se necessário */
+    font-family: 'Fira Code', monospace; /* Fonte de programador */
+  }
+
+
 }

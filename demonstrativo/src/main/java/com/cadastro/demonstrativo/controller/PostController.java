@@ -11,7 +11,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/posts")
 public class PostController {
@@ -49,8 +53,6 @@ public class PostController {
         postRepository.save(novoPost);
         return ResponseEntity.status(HttpStatus.CREATED).body(new PostResponseDTO(novoPost));
     }
-
-
 
     @GetMapping
     public List<PostResponseDTO> listarTodos() {
@@ -115,6 +117,48 @@ public class PostController {
             return ResponseEntity.noContent().build();
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<?> criarPostsEmMassa(@RequestBody @Valid List<PostRequestDTO> listaDados) {
+        List<PostResponseDTO> salvos = new ArrayList<>();
+        List<String> erros = new ArrayList<>();
+
+        for (PostRequestDTO dados : listaDados) {
+            try {
+                // Reutiliza a lógica de busca do autor que já temos
+                var autor = usuarioRepository.findById(dados.usuarioId())
+                        .orElseThrow(() -> new RuntimeException("Autor " + dados.usuarioId() + " não encontrado"));
+
+                // Verifica duplicidade antes de salvar cada um
+                boolean jaExiste = postRepository.existsByTituloAndTecnologiaAndAutor(
+                        dados.titulo(), dados.tecnologia(), autor
+                );
+
+                if (!jaExiste) {
+                    Post post = new Post();
+                    post.setTitulo(dados.titulo());
+                    post.setDescricao(dados.descricao());
+                    post.setComando(dados.comando());
+                    post.setTecnologia(dados.tecnologia());
+                    post.setAutor(autor);
+
+                    postRepository.save(post);
+                    salvos.add(new PostResponseDTO(post));
+                } else {
+                    erros.add("Duplicado: " + dados.titulo());
+                }
+            } catch (Exception e) {
+                erros.add("Erro no post '" + dados.titulo() + "': " + e.getMessage());
+            }
+        }
+
+        Map<String, Object> resposta = new HashMap<>();
+        resposta.put("sucessos", salvos.size());
+        resposta.put("falhas", erros);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
+    }
+
 
 }
 

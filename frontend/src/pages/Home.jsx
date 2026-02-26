@@ -4,7 +4,9 @@ import api from '../services/api';
 export function Home() {
   const [posts, setPosts] = useState([]);
   const [techFiltro, setTechFiltro] = useState('Todos');
-  const tecnologias = ['Todos', 'Java', 'Python', 'C#', 'Docker', 'React'];
+  const tecnologias = ['Todos', 'Java', 'Python', 'C#', 'Docker', 'React', 'Angular', 'Node', 'MySQL', 'Javascript', 'PHP'];
+  const [busca, setBusca] = useState(''); // 1. Estado para a busca
+
 
   useEffect(() => {
     // Busca todos os posts da API v1.5
@@ -12,9 +14,14 @@ export function Home() {
   }, []);
 
   // Filtra a lista baseada na aba selecionada
-  const postsFiltrados = techFiltro === 'Todos' 
-    ? posts 
-    : posts.filter(p => p.tecnologia.toLowerCase() === techFiltro.toLowerCase());
+  // 2. Lógica de Filtro Duplo (Tecnologia + Texto)
+  const postsFiltrados = posts.filter(p => {
+    const matchesTech = techFiltro === 'Todos' || p.tecnologia.toLowerCase() === techFiltro.toLowerCase();
+    const matchesBusca = p.titulo.toLowerCase().includes(busca.toLowerCase()) || 
+                         p.comando.toLowerCase().includes(busca.toLowerCase());
+    
+    return matchesTech && matchesBusca;
+  });
 
   return (
     <div className="container mx-auto px-4">
@@ -22,17 +29,31 @@ export function Home() {
         Repositório de <span className="text-blue-300">Snippets</span>
       </h1>
 
+      <div className="max-w-xl mx-auto mb-8">
+        <div className="relative group">
+          <span className="absolute inset-y-0 left-4 flex items-center text-white/40 group-focus-within:text-blue-400 transition-colors">
+            🔍
+          </span>
+          <input 
+            type="text"
+            placeholder="Pesquisar por título ou código..."
+            className="glass-input !pl-12 py-3 text-lg border-white/10 focus:border-blue-500/50 shadow-2xl transition-all"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+        </div>
+      </div>
+
       {/* ABAS DE FILTRO */}
       <div className="flex flex-wrap justify-center gap-2 mb-10">
         {tecnologias.map(tech => (
           <button
             key={tech}
             onClick={() => setTechFiltro(tech)}
-            className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 border ${
-              techFiltro === tech 
-              ? 'bg-white text-blue-600 border-white shadow-xl scale-110' 
+            className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 border ${techFiltro === tech
+              ? 'bg-white text-blue-600 border-white shadow-xl scale-110'
               : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
-            }`}
+              }`}
           >
             {tech}
           </button>
@@ -49,21 +70,33 @@ export function Home() {
               </span>
               <span className="text-white/50 text-xs">por {post.nomeAutor}</span>
             </div>
-            
+
             <h2 className="text-xl font-bold text-white mb-2">{post.titulo}</h2>
             <p className="text-white/70 text-sm mb-6 flex-grow line-clamp-3">{post.descricao}</p>
-            
+
             {/* BLOCO DE COMANDO */}
-            <div className="bg-black/40 rounded-lg p-4 font-mono text-sm text-green-400 border border-white/10 relative group">
-              <code>$ {post.comando}</code>
-              <button 
-                onClick={() => navigator.clipboard.writeText(post.comando)}
-                className="absolute top-2 right-2 text-white/30 hover:text-white transition opacity-0 group-hover:opacity-100"
-                title="Copiar comando"
+            <div className={`relative group rounded-lg p-4 font-mono text-sm border custom-scrollbar ${post.comando.includes('\n')
+                ? 'bg-slate-900/90 text-blue-300 border-blue-500/30 code-block'
+                : 'bg-black/40 text-green-400 border-white/10 flex justify-between items-center'
+              }`}>
+
+              <code className="block pr-8">
+                {post.comando.includes('\n') ? post.comando : `$ ${post.comando}`}
+              </code>
+
+              {/* BOTÃO SEMPRE VISÍVEL NO HOVER */}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(post.comando);
+                  alert("Copiado!"); // Opcional: para dar um feedback
+                }}
+                className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-600/80 hover:bg-blue-600 p-2 rounded-md text-white shadow-lg z-10"
+                title="Copiar"
               >
                 📋
               </button>
             </div>
+
           </div>
         ))}
       </div>

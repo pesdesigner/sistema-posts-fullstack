@@ -7,14 +7,15 @@ export function Postar() {
   const navigate = useNavigate();
   const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
 
-  const tecnologias = ['Java', 'Python', 'C#', 'Docker', 'React', 'Node','MySQL', 'Outros'];
+  const tecnologias = ['Java', 'Python', 'C#', 'Docker', 'React', 'Angular', 'Node', 'MySQL', 'Javascript', 'PHP', 'Outros'];
+  const [abaAtiva, setAbaAtiva] = useState('comando'); // 'comando' ou 'codigo'
 
   const [form, setForm] = useState({
     titulo: '',
     descricao: '',
     comando: '',
     tecnologia: 'Java',
-    tecnologiaPersonalizada: '', 
+    tecnologiaPersonalizada: '',
     usuarioId: usuarioLogado?.id
   });
 
@@ -53,30 +54,30 @@ export function Postar() {
     setForm({ ...form, [name]: value });
   };
 
-const handleSalvar = async (e) => {
-  e.preventDefault();
+  const handleSalvar = async (e) => {
+    e.preventDefault();
 
-  // Se for "Outros", usamos o valor digitado no input manual
-  const dadosParaEnviar = {
-    ...form,
-    tecnologia: form.tecnologia === 'Outros' ? form.tecnologiaPersonalizada : form.tecnologia
-  };
+    // Se for "Outros", usamos o valor digitado no input manual
+    const dadosParaEnviar = {
+      ...form,
+      tecnologia: form.tecnologia === 'Outros' ? form.tecnologiaPersonalizada : form.tecnologia
+    };
 
-  try {
-    if (id) {
-      await api.put(`/posts/${id}/${usuarioLogado.id}`, dadosParaEnviar);
-      alert("Snippet atualizado! 📝");
-    } else {
-      await api.post('/posts', dadosParaEnviar);
-      alert("Snippet publicado! 🚀");
+    try {
+      if (id) {
+        await api.put(`/posts/${id}/${usuarioLogado.id}`, dadosParaEnviar);
+        alert("Snippet atualizado! 📝");
+      } else {
+        await api.post('/posts', dadosParaEnviar);
+        alert("Snippet publicado! 🚀");
+      }
+      navigate('/meus-posts');
+    } catch (err) {
+      // Aqui o seu GlobalExceptionHandler do Java vai brilhar!
+      const msg = err.response?.data?.mensagem || "Erro ao salvar";
+      alert(msg);
     }
-    navigate('/meus-posts');
-  } catch (err) {
-    // Aqui o seu GlobalExceptionHandler do Java vai brilhar!
-    const msg = err.response?.data?.mensagem || "Erro ao salvar";
-    alert(msg);
-  }
-};
+  };
 
 
   return (
@@ -85,23 +86,23 @@ const handleSalvar = async (e) => {
         <h1 className="text-3xl font-bold text-white mb-8 text-center">
           {id ? 'Editar Snippet' : 'Compartilhar Snippet'}
         </h1>
-        
+
         <form onSubmit={handleSalvar} className="flex flex-col gap-5 text-left">
           <div>
             <label className="text-white/60 text-sm ml-1">Título</label>
-            <input 
+            <input
               name="titulo"
-              className="glass-input mt-1" 
+              className="glass-input mt-1"
               placeholder="Ex: Listar containers ativos"
               value={form.titulo}
               onChange={handleChange}
-              required 
+              required
             />
           </div>
 
           <div>
             <label className="text-white/60 text-sm ml-1">Tecnologia</label>
-            <select 
+            <select
               name="tecnologia"
               className="glass-input mt-1 cursor-pointer"
               value={form.tecnologia}
@@ -112,14 +113,14 @@ const handleSalvar = async (e) => {
               ))}
             </select>
 
-              {/* RENDERIZAÇÃO CONDICIONAL: Só aparece se for "Outros" */}
+            {/* RENDERIZAÇÃO CONDICIONAL: Só aparece se for "Outros" */}
             {mostrarInputOutros && (
-              <input 
+              <input
                 type="text"
                 className="glass-input mt-3 border-blue-400/50 animate-pulse"
                 placeholder="Qual tecnologia?"
                 value={form.tecnologiaPersonalizada}
-                onChange={e => setForm({...form, tecnologiaPersonalizada: e.target.value})}
+                onChange={e => setForm({ ...form, tecnologiaPersonalizada: e.target.value })}
                 required
               />
             )}
@@ -127,38 +128,62 @@ const handleSalvar = async (e) => {
 
           <div>
             <label className="text-white/60 text-sm ml-1">Descrição</label>
-            <textarea 
+            <textarea
               name="descricao"
-              className="glass-input mt-1 h-32 resize-none" 
+              className="glass-input mt-1 h-32 resize-none"
               placeholder="O que este comando faz?"
               value={form.descricao}
               onChange={handleChange}
-              required 
+              required
             />
           </div>
 
-          <div>
-            <label className="text-white/60 text-sm ml-1 font-mono">Comando</label>
-            <input 
+          <div className="flex gap-2 mb-4 bg-white/5 p-1 rounded-lg">
+            <button
+              type="button"
+              onClick={() => setAbaAtiva('comando')}
+              className={`flex-1 py-2 rounded-md transition ${abaAtiva === 'comando' ? 'bg-blue-600 text-white shadow' : 'text-white/60 hover:bg-white/10'}`}
+            >
+              ⌨️ Linha de Comando
+            </button>
+            <button
+              type="button"
+              onClick={() => setAbaAtiva('codigo')}
+              className={`flex-1 py-2 rounded-md transition ${abaAtiva === 'codigo' ? 'bg-blue-600 text-white shadow' : 'text-white/60 hover:bg-white/10'}`}
+            >
+              💻 Trecho de Código
+            </button>
+          </div>
+
+          {/* Renderização condicional do Input */}
+          {abaAtiva === 'comando' ? (
+            <input
               name="comando"
-              className="glass-input mt-1 font-mono text-green-400" 
+              className="glass-input font-mono text-green-400"
               placeholder="$ docker ps"
               value={form.comando}
               onChange={handleChange}
-              required 
             />
-          </div>
+          ) : (
+            <textarea
+              name="comando"
+              className="glass-input h-48 font-mono text-blue-300 leading-relaxed"
+              placeholder="public static void main..."
+              value={form.comando}
+              onChange={handleChange}
+            />
+          )}
 
           <div className="flex gap-4 mt-6">
-            <button 
-              type="button" 
-              onClick={() => navigate('/meus-posts')} 
+            <button
+              type="button"
+              onClick={() => navigate('/meus-posts')}
               className="btn-secondary"
             >
               Cancelar
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn-primary"
             >
               {id ? 'Salvar Alterações' : 'Publicar Snippet'}
