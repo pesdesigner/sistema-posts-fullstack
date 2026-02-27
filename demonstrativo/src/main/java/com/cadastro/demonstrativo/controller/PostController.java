@@ -9,12 +9,14 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/posts")
@@ -157,6 +159,42 @@ public class PostController {
         resposta.put("falhas", erros);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
+    }
+
+    // 1. Listar ABSOLUTAMENTE TODOS os posts (com info do autor)
+    @GetMapping("/admin/todos")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<PostResponseDTO> listarTudoAdmin() {
+        return postRepository.findAll()
+                .stream()
+                .map(PostResponseDTO::new)
+                .toList();
+    }
+
+    // 2. Exclusão Universal (O Admin apaga qualquer post pelo ID)
+    @DeleteMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> excluirQualquerPost(@PathVariable Long id) {
+        return postRepository.findById(id).map(post -> {
+            postRepository.delete(post);
+            return ResponseEntity.noContent().build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/admin/estatisticas")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> obterEstatisticas() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalPosts", postRepository.count());
+        stats.put("totalUsuarios", usuarioRepository.count());
+
+        // Contagem por tecnologia (Ex: {Java: 5, Docker: 3})
+        var posts = postRepository.findAll();
+        Map<String, Long> porTech = posts.stream()
+                .collect(Collectors.groupingBy(Post::getTecnologia, Collectors.counting()));
+
+        stats.put("porTecnologia", porTech);
+        return ResponseEntity.ok(stats);
     }
 
 
