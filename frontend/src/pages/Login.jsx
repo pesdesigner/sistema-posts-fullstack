@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -16,10 +17,14 @@ const handleLogin = async (e) => {
     localStorage.setItem('usuarioLogado', JSON.stringify(response.data));
     localStorage.setItem('token', response.data.token); // Salva o token separado para facilitar
     
+    toast.success(`Bem-vindo de volta, ${response.data.nome}!`, {
+      style: { background: '#1e293b', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
+    });
+
     navigate('/');
     window.location.reload();
   } catch (err) {
-    alert(err.response?.data?.mensagem || "Falha no login");
+      toast.error(err.response?.data?.mensagem || "E-mail ou senha inválidos");
   }
 };
 

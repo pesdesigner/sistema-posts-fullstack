@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export function UsuarioLista() {
   const [usuarios, setUsuarios] = useState([]);
@@ -25,7 +26,7 @@ export function UsuarioLista() {
         await api.delete(`/usuarios/${id}`);
         setUsuarios(usuarios.filter(u => u.id !== id));
       } catch (err) {
-        alert("Erro ao excluir.");
+        toast.error("Erro ao excluir.");
       }
     }
   };

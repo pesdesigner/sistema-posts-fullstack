@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export function Cadastro() {
   // Estado inicial do formulário
@@ -20,7 +21,7 @@ export function Cadastro() {
         })
         .catch(err => {
           console.error("Erro ao buscar usuário:", err);
-          alert("Usuário não encontrado.");
+          toast.success("Usuário não encontrado.");
           navigate('/');
         });
     }
@@ -33,11 +34,11 @@ export function Cadastro() {
       if (id) {
         // Modo Edição: PUT
         await api.put(`/usuarios/${id}`, form);
-        alert("Usuário atualizado com sucesso!");
+        toast.success("Usuário atualizado com sucesso!");
       } else {
         // Modo Cadastro: POST
         await api.post('/usuarios', form);
-        alert("Usuário cadastrado com sucesso!");
+        toast.success("Usuário cadastrado com sucesso!");
       }
       navigate('/usuarios'); // Volta para a listagem
     } catch (err) {
@@ -46,11 +47,11 @@ export function Cadastro() {
       // Se o Spring enviou uma lista de erros de validação (BindingResult)
       if (erroData?.errors && Array.isArray(erroData.errors)) {
         const mensagens = erroData.errors.map(e => `${e.field}: ${e.defaultMessage}`).join('\n');
-        alert("Erro de Validação:\n" + mensagens);
+        toast.error("Erro de Validação:\n" + mensagens);
       } else {
         // Caso seja um erro simples (como e-mail duplicado ou erro 500)
         const msg = typeof erroData === 'string' ? erroData : (erroData?.message || "Erro desconhecido");
-        alert("Erro: " + msg);
+        toast.error("Erro: " + msg);
       }
       console.error("Detalhes do erro no F12:", erroData);
     }

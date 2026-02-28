@@ -1,4 +1,4 @@
-# 🚀 Sistema de Cadastro Full Stack (v6.0.0)
+# 🚀 Sistema de Cadastro Full Stack (v7.0.0)
 
 Sistema moderno de gerenciamento de usuários desenvolvido com **Java 21** e **React 18**.
 

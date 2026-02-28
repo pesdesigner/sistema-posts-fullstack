@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export function Postar() {
   const { id } = useParams(); // Se houver ID, estamos em modo EDIÇÃO
@@ -43,7 +44,7 @@ export function Postar() {
         })
         .catch(err => {
           console.error("Erro ao buscar snippet:", err);
-          alert("Snippet não encontrado.");
+          toast.alert("Snippet não encontrado.");
           navigate('/meus-posts');
         });
     }
@@ -66,16 +67,16 @@ export function Postar() {
     try {
       if (id) {
         await api.put(`/posts/${id}/${usuarioLogado.id}`, dadosParaEnviar);
-        alert("Snippet atualizado! 📝");
+        toast.success("Snippet atualizado! 📝");
       } else {
         await api.post('/posts', dadosParaEnviar);
-        alert("Snippet publicado! 🚀");
+        toast.success("Snippet publicado! 🚀");
       }
       navigate('/meus-posts');
     } catch (err) {
       // Aqui o seu GlobalExceptionHandler do Java vai brilhar!
       const msg = err.response?.data?.mensagem || "Erro ao salvar";
-      alert(msg);
+      toast.error(msg);
     }
   };
 

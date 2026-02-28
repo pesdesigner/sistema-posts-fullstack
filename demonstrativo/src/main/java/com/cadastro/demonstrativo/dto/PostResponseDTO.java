@@ -19,8 +19,10 @@ public record PostResponseDTO(
                 post.getDescricao(),
                 post.getComando(),
                 post.getTecnologia(),
-                post.getAutor().getNome(),
-                post.getAutor().getId()
+                // Se o autor existir, pega o nome. Se não, exibe "Anônimo"
+                post.getAutor() != null ? post.getAutor().getNome() : "Anônimo",
+                // Se o autor existir, pega o ID. Se não, retorna 0
+                post.getAutor() != null ? post.getAutor().getId() : 0L
         );
     }
 }

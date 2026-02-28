@@ -7,6 +7,7 @@ import { Login } from './pages/Login';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { MeusPosts } from './pages/MeusPosts';
 import { NotFound } from './pages/NotFound';
+import { AdminDashboard } from './pages/AdminDashboard';
 
 export function AppRoutes() {
   return (
@@ -52,6 +53,13 @@ export function AppRoutes() {
           <Cadastro />
         </ProtectedRoute>
       } />
+
+      <Route path="/admin/dashboard" element={
+        <ProtectedRoute roleRequired="ADMIN">
+          <AdminDashboard />
+        </ProtectedRoute>
+      } />
+
 
       {/* ESTA DEVE SER SEMPRE A ÚLTIMA ROTA */}
       <Route path="*" element={<NotFound />} />

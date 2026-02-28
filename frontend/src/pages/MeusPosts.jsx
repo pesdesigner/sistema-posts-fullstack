@@ -1,74 +1,130 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Importe o navigate
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import toast from 'react-hot-toast';
+import { PostCard } from '../components/PostCard'; // 1. Certifique-se da importação
+import { SkeletonCard } from '../components/SkeletonCard';
 
 export function MeusPosts() {
   const [posts, setPosts] = useState([]);
-  const navigate = useNavigate(); // 2. Inicialize o navigate
+  const [busca, setBusca] = useState('');
+  const [techFiltro, setTechFiltro] = useState('Todos');
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   
-  // Pegamos o usuário uma única vez
   const usuario = JSON.parse(localStorage.getItem('usuarioLogado'));
+  //const tecnologias = ['Todos', 'Java', 'Python', 'C#', 'Docker', 'React', 'Angular', 'Node', 'MySQL', 'Javascript', 'PHP', 'Outros'];
+
+  const tecnologiasDisponiveis = [
+  'Todos', 
+  ...new Set(posts.map(post => post.tecnologia))
+].sort();
 
   useEffect(() => {
-    // Usamos o ID para evitar que objetos complexos causem re-renderização
-    const usuarioId = usuario?.id;
-
-    if (usuarioId) {
-      api.get(`/posts/autor/${usuarioId}`)
-        .then(res => setPosts(res.data))
-        .catch(err => console.error("Erro ao carregar:", err));
-    }
-  }, [usuario?.id]); // 3. Dependência estável (apenas o ID)
-
-  const handleExcluir = async (postId) => {
-    if (window.confirm("Deseja apagar este snippet permanentemente?")) {
+    const carregarDados = async () => {
+      if (!usuario?.id) return;
+      setLoading(true);
       try {
-        await api.delete(`/posts/${postId}/${usuario.id}`);
-        setPosts(posts.filter(p => p.id !== postId));
-        alert("Snippet removido!");
+        const res = await api.get(`/posts/autor/${usuario.id}`);
+        setPosts(res.data);
       } catch (err) {
-        alert(err.response?.data || "Erro ao excluir");
+        toast.error("Erro ao carregar seus snippets.");
+      } finally {
+        setLoading(false);
       }
+    };
+    carregarDados();
+  }, [usuario?.id]);
+
+const handleExcluir = async (postId) => {
+  // 1. A TRAVA (Confirmação)
+  if (window.confirm("Cuidado! Deseja apagar este snippet permanentemente?")) {
+    
+    // 2. O FEEDBACK DE ESPERA (Opcional, mas sênior)
+    const carregandoToast = toast.loading("Excluindo...");
+
+    try {
+      await api.delete(`/posts/${postId}/${usuario.id}`);
+      
+      // Atualiza o estado local
+      setPosts(posts.filter(p => p.id !== postId));
+
+      // 3. O SUCESSO (Substitui o alerta de sucesso)
+      toast.success("Snippet removido com sucesso! 👋", { id: carregandoToast });
+      
+    } catch (err) {
+      // 4. O ERRO
+      toast.error("Ops! Não conseguimos excluir o post.", { id: carregandoToast });
     }
-  };
+  }
+};
+
+
+  const postsFiltrados = posts.filter(p => {
+    const matchesTech = techFiltro === 'Todos' || p.tecnologia === techFiltro;
+    const matchesBusca = p.titulo.toLowerCase().includes(busca.toLowerCase()) || 
+                         p.comando.toLowerCase().includes(busca.toLowerCase());
+    return matchesTech && matchesBusca;
+  });
 
   return (
-    <div className="container mx-auto px-4">
-      <h1 className="text-3xl font-bold text-white mb-8">
+    <div className="container mx-auto px-4 max-w-6xl">
+      <h1 className="text-3xl font-bold text-white mb-8 text-center">
         Meus <span className="text-blue-300">Snippets</span>
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {posts.map(post => (
-          <div key={post.id} className="glass-card">
-            <div className="flex justify-between mb-2">
-              <span className="text-blue-300 text-xs font-bold uppercase">{post.tecnologia}</span>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => navigate(`/editar-post/${post.id}`)} // Agora vai funcionar!
-                  className="text-blue-400 hover:text-blue-300 text-xs font-bold"
-                >
-                  EDITAR
-                </button>
-                <button
-                  onClick={() => handleExcluir(post.id)}
-                  className="text-red-400 hover:text-red-300 text-xs font-bold"
-                >
-                  EXCLUIR
-                </button>
-              </div>
-            </div>
-            <h2 className="text-xl font-bold text-white">{post.titulo}</h2>
-            <p className="text-white/60 text-sm my-4">{post.descricao}</p>
-            <div className="bg-black/40 p-3 rounded font-mono text-green-400 text-sm">
-              $ {post.comando}
-            </div>
-          </div>
-        ))}
+      {/* BARRA DE PESQUISA */}
+      <div className="max-w-xl mx-auto mb-6 relative">
+        <input 
+          type="text"
+          placeholder="Pesquisar em meus códigos..."
+          className="glass-input py-3 !pl-12"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+        />
       </div>
 
-      {posts.length === 0 && (
-        <p className="text-white/40 mt-10">Você ainda não publicou nenhum snippet.</p>
+      {/* FILTROS */}
+{/* ABAS DE FILTRO DINÂMICAS */}
+<div className="flex flex-wrap justify-center gap-2 mb-10">
+  {tecnologiasDisponiveis.map(tech => (
+    <button
+      key={tech}
+      onClick={() => setTechFiltro(tech)}
+      className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 border ${
+        techFiltro === tech
+          ? 'bg-white text-blue-600 border-white shadow-xl scale-110'
+          : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+      }`}
+    >
+      {tech}
+    </button>
+  ))}
+</div>
+
+
+      {/* RENDERIZAÇÃO ÚNICA */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 4].map(n => <SkeletonCard key={n} />)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {postsFiltrados.map(post => (
+            <PostCard 
+              key={post.id} 
+              post={post} 
+              showActions={true} 
+              onEdit={(id) => navigate(`/editar-post/${id}`)}
+              onDelete={handleExcluir}
+              showAuthor={false}
+            />
+          ))}
+        </div>
+      )}
+
+      {!loading && postsFiltrados.length === 0 && (
+        <p className="text-center text-white/30 mt-20">Nenhum snippet encontrado.</p>
       )}
     </div>
   );

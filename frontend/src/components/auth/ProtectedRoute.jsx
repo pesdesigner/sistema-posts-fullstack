@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { Navigate } from 'react-router-dom';
 
 export function ProtectedRoute({ children, roleRequired }) {
@@ -10,7 +11,7 @@ export function ProtectedRoute({ children, roleRequired }) {
 
   // 2. Se a rota exige um perfil específico (ex: ADMIN) e o usuário não tem
   if (roleRequired && usuario.perfil !== roleRequired) {
-    alert("Acesso negado: Você não tem permissão para acessar esta página.");
+    toast.success("Acesso negado: Você não tem permissão para acessar esta página.");
     return <Navigate to="/" replace />;
   }
 

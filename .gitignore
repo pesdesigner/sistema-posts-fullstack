@@ -27,3 +27,20 @@ Thumbs.db
 **/application-prod.properties
 **/application.properties
 .env
+
+### --- Swagger & SpringDoc ---
+# Ignora arquivos gerados de documentação estática (se houver)
+.openapi/
+bin/
+
+### --- Maven Wrapper ---
+.maven/
+.flattened-pom.xml
+**.tag
+**.log
+
+### --- Java & IDE ---
+.recommenders/
+*.class
+target/
+.metadata/
